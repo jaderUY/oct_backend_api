@@ -27,6 +27,13 @@ async def procesar_datos():
 def inicio():
     return {"status": "online", "message": "API pública para gestionar perfiles de sistema y comunicarse con agentes remotos."}
 
+"""
+@app.post("/recibir")
+async def recibir_datos(datos: dict):  
+    nombre = datos["nombre_perfil"]
+    return {"status": "ok"}
+"""
+
 @app.post("/api/profiles/update")
 async def actualizarPerfilSistema(data: clases.SolicitudCambioPerfil):
     # Este endpoint ahora requerirá obligatoriamente la cabecera 'X-API-Key'
@@ -45,6 +52,14 @@ async def actualizarPerfilSistema(data: clases.SolicitudCambioPerfil):
     )
     mensaje = {"status": "success", "message": "Perfil guardado correctamente."}
     return mensaje
+
+"""
+@app.post("/validar")
+async def validar_llave(llave: str):
+    if llave != "12345":
+        return {"error": "No autorizado"}
+    return {"status": "acceso concedido"}
+"""
 
 # Endpoint para la comunicación WebSocket con los agentes remotos
 @app.websocket("/ws/agent")
