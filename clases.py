@@ -1,7 +1,7 @@
 from fastapi import solicitud
 from fastapi.responses import JSONResponse as JSON
-from starlette.middleware.base import BaseHTTPMiddleware 
-import os 
+from starlette.middleware.base import BaseHTTPMiddleware
+import os
 from pydantic import BaseModel as esquema
 
 # Definimos la API Key secreta (idealmente cárgala desde una variable de entorno en Render)
@@ -33,9 +33,9 @@ class Middleware(BaseHTTPMiddleware):
         # Si es válida, continuar con la petición normal
         response = await call_next(request)
         return response
-    
+
 class SolicitudCambioPerfil(esquema):
-    
+
     id_controlador: str
     nombre_perfil: str
     receta_yaml: dict

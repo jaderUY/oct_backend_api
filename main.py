@@ -1,26 +1,31 @@
-import datetime 
+import datetime
 import os
-import motor
+import motor.motor_asyncio
 import uvicorn
-import clases
+import clases 
 import certifi as Certificado
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
 # Configuramos la base de datos y los endpoints de la API
-MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://Admin:Baldur$038@oscontexttunerdb.q7nra7u.mongodb.net/")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://Admin:Baldur$038@oscontexttunerdb.q7nra7u.mongodb.net/") #Para mejor seguridad
 cliente = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI, tls=True, tlsCAFile=Certificado.where(), serverSelectionTimeoutMS=5000)
 
 
 # Inicializamos la aplicación FastAPI y le agregamos el middleware de validación de API Key
 app = FastAPI( title="OS Context Tuner API (oct_backend_api)", version="1.0.0", description="esta api tiene el rol de gestionar perfiles de sistema y comunicarse con agentes remotos. y permitir la la conexión asincronica entre la aplicacion movil y de escritorio con la base de datos" )
 app.add_middleware(clases.Middleware)  # Registrar el middleware en la app
-db = cliente["saas_manager"]
-ejecutar = uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-iniciar = ejecutar()
+db = cliente["saas_manager"]  
+
+"""
+@app.get("/procesar")
+async def procesar_datos():
+    time.sleep(5)
+    return {"mensaje": "Procesado"}
+"""
 
 @app.get("/")
-def home():
-    return {"status": "online", "message": "API pública sin restricciones de Key."}
+def inicio():
+    return {"status": "online", "message": "API pública para gestionar perfiles de sistema y comunicarse con agentes remotos."}
 
 @app.post("/api/profiles/update")
 async def actualizarPerfilSistema(data: clases.SolicitudCambioPerfil):
@@ -59,5 +64,5 @@ async def endpointWebsocket(websocket: WebSocket, api_key: str | None = None):
         await websocket.close()
 
 if __name__ == "__main__":
-    iniciar
+    uvicorn.run("main:app", host="0.0.0.0", port=8000)
 
