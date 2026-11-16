@@ -1,4 +1,4 @@
-from fastapi import solicitud
+from fastapi import Request
 from fastapi.responses import JSONResponse as JSON
 from starlette.middleware.base import BaseHTTPMiddleware
 import os
@@ -9,7 +9,7 @@ API_KEY = os.getenv("API_KEY", "Black-347")
 
 # El middleware para validar la API Key en cada petición HTTP
 class Middleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: solicitud, call_next):
+    async def dispatch(self, request: Request, call_next):
         # Excluir rutas públicas o de documentación para que no fallen al abrirlas en el navegador
         ruta_escape = ["/", "/docs", "/openapi.json", "/redoc"]
         if request.url.path in ruta_escape:
