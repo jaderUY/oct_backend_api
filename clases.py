@@ -16,7 +16,7 @@ class Middleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # Obtener la API Key de las cabeceras HTTP (ej: "X-API-Key: tu_clave")
-        llave_cliente = solicitud.headers.get("X-API-Key")
+        llave_cliente = request.headers.get("X-API-Key")
 
         # Validar si la clave existe y coincide
         if not llave_cliente or llave_cliente != API_KEY:
