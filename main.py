@@ -1,31 +1,52 @@
 from datetime import datetime, timezone
-import os
+import os as entorno
 import motor.motor_asyncio
 import uvicorn
-import clases
+import clases as Objetos
 import certifi as Certificado
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 
 # Configuramos la base de datos de MongoDB Atlas
-MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://Admin:Baldur$038@oscontexttunerdb.q7nra7u.mongodb.net/")
+MONGO_URI = entorno.getenv("MONGO_URI", "mongodb+srv://Admin:Baldur$038@oscontexttunerdb.q7nra7u.mongodb.net/")
 cliente = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI, tls=True, tlsCAFile=Certificado.where(), serverSelectionTimeoutMS=5000)
+db = cliente["saas_manager"]
 
-# Inicializamos la aplicación FastAPI sin middlewares
 app = FastAPI(
     title="OS Context Tuner API (oct_backend_api)",
     version="1.0.0",
-    description="API simplificada para gestionar perfiles de sistema y comunicación asíncrona."
+    description=(
+        """
+        API simplificada para gestionar perfiles de sistema y comunicación
+        asíncrona.
+        """
+    ),
+    contact={
+        "name": "Jader Araujo",
+        "email": "jaderdavidaraujoarboleda@gmail.com"
+    }
 )
 
-db = cliente["saas_manager"]
+"""
+@app.get("/procesar")
+async def procesar_datos():
+    time.sleep(5)
+    return {"mensaje": "Procesado"}
+"""
 
 @app.get("/")
 def inicio():
-    return {"status": "online", "message": "API pública y abierta funcionando correctamente."}
+    estatuto = {"status": "online", "message": "API pública y abierta funcionando correctamente."}
+    return estatuto
+
+"""
+@app.post("/recibir")
+async def recibir_datos(datos: dict):
+    nombre = datos["nombre_perfil"]
+    return {"status": "ok"}
+"""
 
 @app.post("/api/profiles/update")
-async def actualizarPerfilSistema(data: clases.SolicitudCambioPerfil):
-    # Recibe y guarda o actualiza el perfil en MongoDB Atlas de forma directa
+async def actualizarPerfilSistema(data: Objetos.SolicitudCambioPerfil):
     await db.profiles.update_one(
         {"id_controlador": data.id_controlador},
         {
@@ -39,19 +60,50 @@ async def actualizarPerfilSistema(data: clases.SolicitudCambioPerfil):
         },
         upsert=True,
     )
-    return {"status": "success", "message": "Perfil guardado correctamente en la base de datos."}
+
+    estado = {"status": "success", "message": "Perfil guardado correctamente en la base de datos."}
+    return estado
+
+
+# endpoint GET para consultar el perfil asignado a un controlador
+@app.get("/api/profiles/{id_controlador}")
+async def obtenerPerfilSistema(id_controlador: str):
+    # Buscamos el documento por id_controlador y excluimos el campo interno _id
+    perfil = await db.profiles.find_one(
+        {"id_controlador": id_controlador}, {"_id": 0}
+    )
+
+    if not perfil:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"No se encontró ningún perfil registrado para el controlador:"
+                f" {id_controlador}"
+            ),
+        )
+    estado = {"status": "success", "data": perfil}
+    return estado
+
+"""
+@app.post("/validar")
+async def validar_llave(llave: str):
+    if llave != "12345":
+        return {"error": "No autorizado"}
+    return {"status": "acceso concedido"}
+"""
 
 @app.websocket("/ws/agent")
 async def endpointWebsocket(websocket: WebSocket):
-    # Conexión WebSocket directa y abierta para el agente
     await websocket.accept()
-
     try:
         while True:
             data = await websocket.receive_json()
             await websocket.send_json({"status": "acknowledged", "received_data": data})
     except WebSocketDisconnect:
         print("El agente remoto se ha desconectado.")
+    finally:
+        await websocket.close()
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+  uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
