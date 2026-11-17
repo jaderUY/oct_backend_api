@@ -84,6 +84,58 @@ async def obtenerPerfilSistema(id_controlador: str):
     estado = {"status": "success", "data": perfil}
     return estado
 
+# enpoint POST para registrar o actualizar un usuario en la base de datos
+@app.post("/api/users")
+async def registrar_usuario(data: Objetos.SolicitudUsuario):
+    await db.users.update_one(
+        {"id_usuario": data.id_usuario},
+        {
+            "$set": {
+                "id_usuario": data.id_usuario,
+                "nombre": data.nombre,
+                "email": data.email,
+                "rol": data.rol,
+                "timestamp": datetime.now(timezone.utc),
+            }
+        },
+        upsert=True,
+    )
+    estatuto = {"status": "success", "message": "Usuario registrado o actualizado correctamente."}
+    return estatuto
+
+@app.get("/api/users/{id_usuario}")
+async def obtener_usuario(id_usuario: str):
+    usuario = await db.users.find_one({"id_usuario": id_usuario}, {"_id": 0})
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+    estatuto = {"status": "success", "data": usuario}
+    return estatuto
+
+# endpoint POST para registrar o actualizar de una vez un dispositivo en la base de datos
+@app.post("/api/devices")
+async def registrar_dispositivo(data: Objetos.SolicitudDispositivo):
+    await db.devices.update_one(
+        {"id_dispositivo": data.id_dispositivo},
+        {
+            "$set": {
+                "id_dispositivo": data.id_dispositivo,
+                "id_usuario": data.id_usuario,
+                "nombre_dispositivo": data.nombre_dispositivo,
+                "sistema_operativo": data.sistema_operativo,
+                "estado": data.estado,
+                "ultimo_registro": datetime.now(timezone.utc),
+            }
+        },
+        upsert=True,
+    )
+    return {"status": "success", "message": "Dispositivo registrado correctamente."}
+
+@app.get("/api/users/{id_usuario}/devices")
+async def listar_dispositivos_usuario(id_usuario: str):
+    cursor = db.devices.find({"id_usuario": id_usuario}, {"_id": 0})
+    dispositivos = await cursor.to_list(length=100)
+    return {"status": "success", "data": dispositivos}
+
 """
 @app.post("/validar")
 async def validar_llave(llave: str):

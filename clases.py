@@ -1,4 +1,5 @@
 from pydantic import BaseModel as esquema
+from typing import Optional
 # from fastapi import Request
 # from fastapi.responses import JSONResponse as JSON
 # from starlette.middleware.base import BaseHTTPMiddleware
@@ -35,8 +36,25 @@ class Middleware(BaseHTTPMiddleware):
         return response
 """
 
+# clase para definir el esquema de datos para el cambio de perfil
 class SolicitudCambioPerfil(esquema):
     id_controlador: str
     nombre_perfil: str
     receta_yaml: dict
     actualizado_por: str
+
+# esquema para definir la gestion del usuario en el saas_manager
+class SolicitudUsuario(esquema):
+    id_usuario: str
+    nombre: str
+    email: str
+    rol: Optional[str] = "standard"
+
+# esquema para definir la gestion de la receta en el dispositivo
+class SolicitudDispositivo(esquema):
+    id_dispositivo: str
+    id_usuario: str
+    nombre_dispositivo: str
+    sistema_operativo: str = "windows 11"
+    estado: Optional[str] = "activo"
+
