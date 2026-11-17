@@ -1,76 +1,37 @@
-from pydantic import BaseModel as esquema
-from typing import Optional as opcion
-# from fastapi import Request
-# from fastapi.responses import JSONResponse as JSON
-# from starlette.middleware.base import BaseHTTPMiddleware
+from pydantic import BaseModel as Esquema
+from typing import Optional as Opcion
 
-# Definimos la API Key secreta (idealmente cárgala desde una variable de entorno en Render)
-# API_KEY = os.getenv("API_KEY", "Black-347")
-
-# clase para definir el esquema de datos para el cambio de perfil
-class SolicitudCambioPerfil(esquema):
+class SolicitudCambioPerfil(Esquema):
     id_controlador: str
     nombre_perfil: str
     receta_yaml: dict
     actualizado_por: str
 
-# esquema para definir la gestion del usuario en el saas_manager
-class SolicitudUsuario(esquema):
+class SolicitudUsuario(Esquema):
     id_usuario: str
     nombre: str
     email: str
-    rol: opcion[str] = "standard"
+    rol: Opcion[str] = "standard"
 
-# esquema para definir la gestion de la receta en el dispositivo
-class SolicitudDispositivo(esquema):
+class SolicitudDispositivo(Esquema):
     id_dispositivo: str
     id_usuario: str
     nombre_dispositivo: str
     sistema_operativo: str = "windows 11"
-    estado: opcion[str] = "activo"
+    estado: Opcion[str] = "activo"
 
-
-# El middleware para validar la API Key en cada petición HTTP
-"""
-class Middleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        # Excluir rutas públicas o de documentación para que no fallen al abrirlas en el navegador
-        ruta_escape = ["/", "/docs", "/openapi.json", "/redoc"]
-        if request.url.path in ruta_escape:
-            return await call_next(request)
-
-        # Obtener la API Key de las cabeceras HTTP (ej: "X-API-Key: tu_clave")
-        llave_cliente = request.headers.get("X-API-Key")
-
-        # Validar si la clave existe y coincide
-        if not llave_cliente or llave_cliente != API_KEY:
-            JSON(
-                status_code=403,
-                content={
-                    "detail": (
-                        "Acceso denegado: API Key inválida, faltante o no autorizada."
-                    )
-                },
-            )
-            return JSON()
-
-        # Si es válida, continuar con la petición normal
-        response = await call_next(request)
-        return response
-"""
-
-class UsuarioRegistro(esquema):
+class UsuarioRegistro(Esquema):
     id_usuario_registro: str
     nombre: str
     email: str
     contraseña: str
-    rol: opcion[str] = "standard"
+    rol: Opcion[str] = "standard"
 
-class UsuarioLogin(esquema):
+class UsuarioLogin(Esquema):
     email: str
     contraseña: str
 
-class Token(esquema):
+class Token(Esquema):
     access_token: str
     token_type: str = "bearer"
 
